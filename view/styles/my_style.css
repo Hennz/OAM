@@ -1,0 +1,49 @@
+.log_reg{
+	border: 1px solid #ccc;
+	width: 17%;
+	height:	280px;
+}
+
+.log_reg .buttons span{
+	margin-right: 40px;
+	cursor: pointer;
+}
+
+.log_reg .buttons{
+	width: 100%;
+	/*border: 1px solid #0ff;*/
+	border-bottom: 1px solid #ccc
+}
+
+.log_reg .login{
+	position: absolute;
+	width: 16%;
+	/*border: 1px solid #f00;*/
+}
+
+.log_reg .register{
+	position: absolute;
+	display: none;
+	height: 250px;
+	width: 16%;
+	/*border: 1px solid #0f0;*/
+}
+
+.register .student_details {
+	position: absolute;
+	/*border: 1px solid #f00;*/
+	height:	70px;
+	width: 100%;
+}
+
+.register .teacher_details {
+	position: absolute;
+	/*border: 1px solid #f00;*/
+	display: none;
+	height:	70px;
+	width: 100%;
+}
+
+input[type="submit"] {
+  margin-top: 80px;
+}
