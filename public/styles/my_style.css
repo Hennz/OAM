@@ -1,3 +1,7 @@
+body{
+	background-color: #ff0;
+}
+
 .log_reg{
 	border: 1px solid #ccc;
 	width: 17%;
@@ -46,4 +50,44 @@
 
 input[type="submit"] {
   margin-top: 80px;
+}
+
+
+/*OTHERS*/
+.slide{
+    width:960px;
+    height:392px;
+    display:inline;
+    float:left;
+    position: absolute;
+}
+
+/*USERS LIST TABLES*/
+.users_list_table, .add_users_table
+{
+    display:  table;
+    width:auto;
+    background-color:#eee;
+    border:1px solid  #666666;
+    border-spacing:5px;
+}
+
+.headRow
+{
+	display:table-row;
+   	width:auto;
+   	font-weight: bold;
+}
+.divRow
+{
+   display:table-row;
+   width:auto;
+}
+
+.divCell
+{
+    float:left;/*fix for  buggy browsers*/
+    display:table-column;
+    width:200px;
+    background-color:#ccc;
 }

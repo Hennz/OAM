@@ -1,18 +1,4 @@
 <?php
-// require("../model/model.php");
-// require("../index.php");
-
-// $h = new HomeControler();
-
-// switch($_GET['method']){
-// 	case 'index': $h->index(); break;
-// 	case 'login': $h->login(); break;
-// 	case 'register': $h->register(); break;
-// 	case 'activate': $h->activate(); break;
-// 	case 'logout': $h->logout(); break;
-// 	case 'change_password': $h->changePassword(); break;
-// }
-
 Class HomeController extends BaseController {
 
 	// const BASE_URL = "http://www.myprograming.esy.es/OAM/";
@@ -28,27 +14,25 @@ Class HomeController extends BaseController {
 		$this->model = new Model();
 	}
 
+	//LOGIN
 	public function index() {
-		unset($_SESSION['page_message']);
-
 		if(isset($_COOKIE['username']) && isset($_COOKIE['email'])) {
 			$condition = 'username = "'. $_COOKIE['username'].'" AND email = "'.$_COOKIE['email'].'"';
 			$results = $this->model->selectWithCondition('users', $condition);
 			if (count($results>0)) {
 				$_SESSION["user"] = array(
+							'user_id' => $results[0]['id'],
+							'user_type' => $results[0]['type'],
 							'username' => $results[0]['username'],
 							'email' => $results[0]['email']
 							);
-				header('location: '.BASE_URL.'/home/profile');
+				$this->view->render('home');
 			}
+		} elseif (isset($_SESSION["user"]) && !empty($_SESSION["user"])) {
+			$this->view->render('home');
 		} else {
-			// die(BASE_URL.'/home/login');
-			header('location: '.BASE_URL.'/home/login');
+			$this->view->render('login');
 		}	
-	}
-
-	public function profile() {
-		echo ("profile page");
 	}
 
 	public function login() {
@@ -73,6 +57,8 @@ Class HomeController extends BaseController {
 				if (count($results)>0) {
 					if ($results[0]['status'] == 1) {
 						$_SESSION["user"] = array(
+								'user_id' => $results[0]['id'],
+								'user_type' => $results[0]['type'],
 								'username' => $results[0]['username'],
 								'email' => $results[0]['email']
 								);
@@ -100,7 +86,11 @@ Class HomeController extends BaseController {
 				$this->view->render('login');
 			}
 		} else {
-			$this->view->render('login');
+			if ((isset($_SESSION["user"])) && (!empty($_SESSION["user"]))) {
+				$this->view->render('home');
+			} else {
+				$this->view->render('login');
+			}
 		}
 	}
 
@@ -108,7 +98,11 @@ Class HomeController extends BaseController {
 		if (isset($_POST) && !empty($_POST)) {
 			// var_dump($_POST); die();
 			$data = array(
-				$_POST['username'] => array(
+				$_POST['fname'] => array(
+					'required'=>true,
+					'max'=>20
+					),
+				$_POST['lname'] => array(
 					'required'=>true,
 					'max'=>20
 					),
@@ -130,7 +124,9 @@ Class HomeController extends BaseController {
 			if ($valid['succes']){
 				$code = rand(10000 , 99999);
 				$v = array(
-					'username' => $_POST['username'],
+					'username' => $_POST['fname'].' '.$_POST['lname'],
+					'fname' => $_POST['fname'],
+					'lname' => $_POST['lname'],
 					'email' => $_POST['email'],
 					'password' => md5($_POST['password']),
 					'status' => $code,
@@ -236,6 +232,8 @@ Class HomeController extends BaseController {
 						$res = $this->model->update('users', $v, $condition);
 						if ($res) {
 							$_SESSION["user"] = array(
+								'user_id' => $value['id'],
+								'user_type' => $value['type'],
 								'username' => $value['username'],
 								'email' => $value['email']
 								);
@@ -269,23 +267,107 @@ Class HomeController extends BaseController {
 
 	public function logout() {
 		unset($_SESSION['user']);
-		header('location: '.BASE_URL.'/home/login');
+		unset($_COOKIE['username']);
+    	unset($_COOKIE['email']);
+		$this->view->render('login');
+	}
+
+	//PROFILE
+	public function profile() {
+		if (isset($_POST) && !empty($_POST)) {
+			// var_dump($_POST);die();
+			$condition = 'id = '.$_SESSION['user']['user_id'];
+			$v = array(
+				'username' => $_POST['username'],
+				'fname' => $_POST['fname'],
+				'lname' => $_POST['lname'],
+				'stud_year' => $_POST['stud_year'],
+				);
+			if ($_SESSION['user']['user_type'] == 1) {
+				$v['stud_group'] = $_POST['group'];
+			} 
+			if ($_SESSION['user']['user_type'] == 2) {
+				$v['groups'] = "all";
+				if (!empty($_POST['groups'])) {
+					$v['groups'] = "";
+					foreach ($_POST['groups'] as $value) {
+						$v['groups'] .= $value;
+					}
+				}
+			} 
+			$res = $this->model->update('users', $v, $condition);
+			if ($res) {
+				$v['type'] = $_SESSION["user"]["user_type"];
+				$v['email'] = $_SESSION["user"]["email"];
+				$v['group'] = $v['stud_group'];
+				$this->view->data =$v;
+				$this->view->page_message = array(
+						'nottice' => 'Profile updated!'
+					);
+				$this->view->render('profile');
+			} else {
+				$v['type'] = $_SESSION["user"]["user_type"];
+				$v['email'] = $_SESSION["user"]["email"];
+				$v['group'] = $v['stud_group'];
+				$this->view->data =$v;
+				$this->view->page_message = array(
+						'error' => 'Update problem!'
+					);
+				$this->view->render('profile');
+			}
+		} else {
+			$user_id = $_SESSION["user"]['user_id'];
+			$condition = 'id = "'. $user_id .'"';
+			$results = $this->model->selectWithCondition('users', $condition);
+			$this->view->data = $results[0];
+			$this->view->render('profile');
+		}
 	}
 
 	public function changePassword() {
-		die("change password");
+		if (isset($_POST) && !empty($_POST)) {
+			$valid =true;
+			if ($valid == true){
+				$condition = 'password = "'.md5($_POST['oldpassword']).'"';
+				$res = $this->model->counter('users', $condition);
+				if ((int)$res>0) {
+					$condition = 'id = '.$_SESSION['user']['user_id'];
+					$v= array('password' => md5($_POST['newpassword']));
+					$res = $this->model->update('users', $v, $condition);
+					if ($res) {
+						$this->view->page_message = array(
+								'nottice' => 'Password was changed with succes!'
+							);
+						$this->view->render('profile');
+					} else {
+						$this->view->page_message = array(
+								'error' => 'Change password problem!'
+							);
+						$this->view->render('profile');
+					}
+				}
+			}
+		} else {
+			$user_id = $_SESSION["user"]['user_id'];
+			$condition = 'id = "'. $user_id .'"';
+			$results = $this->model->selectWithCondition('users', $condition);
+			$this->view->data = $results[0];
+			$this->view->render('profile');
+		}
 	}
 
+	public function usersList($type=1) {
+		$condition = 'type = '.$type;
+		$results = $this->model->selectWithCondition('users', $condition);
+		$this->view->type = $type;
+		$this->view->data = $results;
+		$this->view->render('usersList');
+	}
+
+	//TEST
 	public function test() {
-		if (isset($_POST["coc"])) {
-			var_dump($_POST);
-		}
-		else {
-			$this->view->render('test');
-		}
-		
+		$this->view->render('test');
 	}
 
 }
-
 ?>

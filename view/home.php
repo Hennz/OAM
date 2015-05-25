@@ -5,8 +5,8 @@ session_start();
 <html>
 <head>
 	<title>OAM</title>
-	<link rel="stylesheet" type="text/css" href="styles/my_style.css" />
- 	<script type="text/javascript" src="scripts/my_script.js"></script>
+	<link rel="stylesheet" type="text/css" href="../public/styles/my_style.css" />
+ 	<script type="text/javascript" src="../public/scripts/my_script.js"></script>
 </head>
 <body>
    <div class="page_messages">
@@ -27,6 +27,10 @@ session_start();
    ?>
    </div>
    <a href= <?php echo(BASE_URL); ?>/home/logout>Log-out</a>
-   
+   <br />
+   <a href= <?php echo(BASE_URL); ?>/home/profile>My profille</a>
+   <br />
+   <a href= <?php echo(BASE_URL); ?>/home/usersList>List of users</a>
+   <br />
 </body>
 </html>

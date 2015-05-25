@@ -54,18 +54,33 @@ Class Model extends Model_base {
 	}
 
 	public function update($table, $v, $condition) {
-		$mysqli = new mysqli("localhost", "u656145912_root", "154815", "u656145912_larav");
 		$upd = array();
-		//$vv = array();
 		foreach ($v as $key => $value) {
-			array_push($upd, (string)$key.' = '.(string)$value);
+			array_push($upd, (string)$key.' = "'.$value.'"');
 		}
 		$action = implode(',', $upd);
 		$sql = 'UPDATE '. $table . ' SET '. $action .' WHERE ' .$condition;
-		if ($mysqli->query($sql) === TRUE)
+		
+		if ($this->mysqli->query($sql) === TRUE)
 			return true;
 		else
 			return false;
+	}
+
+	public function counter($table, $condition=null) {
+		$ret = 0;
+		if ($condition == null) {
+			$sql = " SELECT * FROM " . $table;
+			$res = $this->mysqli->query($sql);
+		    if($res->num_rows > 0)
+				$ret = $res->num_rows;
+		} else {
+			$sql = " SELECT * FROM " . $table . " WHERE " . $condition;
+			$res = $this->mysqli->query($sql);
+		    if($res->num_rows > 0)
+				$ret = $res->num_rows;	
+		}
+		return (int)$ret;
 	}
 
 }

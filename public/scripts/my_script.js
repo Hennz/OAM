@@ -1,6 +1,41 @@
 var BASE_URL = "http://www.myprograming.esy.es";
 document.addEventListener("DOMContentLoaded", function(event) { 
- 	
+ 	function changeLogReg(x){
+		var temp = document.getElementsByClassName("buttons")[0].getElementsByTagName("span");
+		if (x==0){
+			document.getElementsByClassName("login")[0].style.display = "block";
+			document.getElementsByClassName("register")[0].style.display = "none";
+		} else {
+			document.getElementsByClassName("login")[0].style.display = "none";
+			document.getElementsByClassName("register")[0].style.display = "block";
+		}
+	}
+
+	// OTHERS
+	function slideShow() {
+    var displayToggled = false;
+    var current1 = $('.slide:visible');
+    var nextSlide = current1.next('.slide');
+    var hideoptions = {
+        "direction": "left",
+        "mode": "hide"
+    };
+    var showoptions = {
+        "direction": "right",
+        "mode": "show"
+    };
+    if (current1.is(':last-child')) {
+        current1.effect("slide", hideoptions, 1000);
+        $("#firstSlide").effect("slide", showoptions, 1000);
+    }
+    else {
+        current1.effect("slide", hideoptions, 1000);
+        nextSlide.effect("slide", showoptions, 1000);
+    }
+};
+setInterval(slideShow, 3000);
+slideShow();
+
 
 });
 
@@ -17,7 +52,8 @@ function changeLogReg(x){
 
 function register_validation() {
 	var result = true;
-	document.getElementById('username').style.borderColor = "#fff";
+	document.getElementById('fname').style.borderColor = "#fff";
+	document.getElementById('lname').style.borderColor = "#fff";
 	document.getElementById('email').style.borderColor = "#fff";
 	document.getElementById('password').style.borderColor = "#fff";
 	document.getElementById('rpassword').style.borderColor = "#fff";
@@ -38,11 +74,19 @@ function register_validation() {
 		document.querySelector('.page_messages').appendChild(temp);
 		result = false;
 	}
-	var username = document.querySelector('#username').value;
-	if ((username == "undefined") || (username.length == 0)) {
-		document.querySelector('#username').style.borderColor = "#f00";
+	var fname = document.querySelector('#fname').value;
+	if ((fname == "undefined") || (fname.length == 0)) {
+		document.querySelector('#fname').style.borderColor = "#f00";
 		var temp = document.createElement('p');
-		temp.innerHTML = '<p>error - Username is required!</p>';
+		temp.innerHTML = '<p>error - First name is required!</p>';
+		document.querySelector('.page_messages').appendChild(temp);
+		result = false;
+	}
+	var lname = document.querySelector('#lname').value;
+	if ((lname == "undefined") || (lname.length == 0)) {
+		document.querySelector('#lname').style.borderColor = "#f00";
+		var temp = document.createElement('p');
+		temp.innerHTML = '<p>error - Last name is required!</p>';
 		document.querySelector('.page_messages').appendChild(temp);
 		result = false;
 	}
