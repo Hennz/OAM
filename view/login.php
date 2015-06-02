@@ -8,6 +8,7 @@
 <body>
    <div class="page_messages">
       <?php
+      include("menu.php");
       if (isset($this->page_message) && count($this->page_message)>0)
          foreach ($this->page_message as $key => $value) {
             echo('<p>' . $key . ' - ' .$value. '</p>');
@@ -16,13 +17,13 @@
    </div>
    <div class="log_reg">
       <div class="buttons">
-         <span onclick="changeLogReg(0)">Log in</span>
-         <span onclick="changeLogReg(1)">Register</span>
+         <span id="login_tab" onclick="changeLogReg(0)">Log in</span>
+         <span id="register_tab" onclick="changeLogReg(1)">Register</span>
       </div>
       <div class="login">
          <form action= <?php echo(BASE_URL); ?>/home/login method="post">
             <label for="email">E-mail</label></br>
-            <input type="email" name="email" placeholder="e-mail" value="alexandruasaftei86@gmail.com" required/><br />
+            <input type="email" name="email" placeholder="e-mail" required/><br />
             <label for="password">Password</label></br>
             <input type="password" name="password" placeholder="Password" required/><br />
             Remember me<input type="checkbox" name="remember" /><br />
@@ -37,7 +38,7 @@
             <label for="lname">Last name</label></br>
             <input type="text" name="lname" placeholder="Last name" id="lname"/><br />
             <label for="email">E-mail</label></br>
-            <input type="email" name="email" placeholder="E-mail" value="alexandruasaftei86@gmail.com" id="email"/><br />
+            <input type="email" name="email" placeholder="E-mail" id="email"/><br />
             <label for="password">Password</label></br>
             <input type="password" name="password" placeholder="Password" id="password"/><br />
             <label for="rpassword">Confirm password</label></br>
@@ -96,7 +97,7 @@
                ?>
                <br />
             </div>
-            <input type="submit" name="register_send" value="Register" onclick="register_validation()"/>
+            <input type="submit" id="reg_submit" name="register_send" value="Register"/>
          </form>
       </div>
    </div>

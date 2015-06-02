@@ -14,7 +14,6 @@ Class HomeController extends BaseController {
 		$this->model = new Model();
 	}
 
-	//LOGIN
 	public function index() {
 		if(isset($_COOKIE['username']) && isset($_COOKIE['email'])) {
 			$condition = 'username = "'. $_COOKIE['username'].'" AND email = "'.$_COOKIE['email'].'"';
@@ -26,12 +25,12 @@ Class HomeController extends BaseController {
 							'username' => $results[0]['username'],
 							'email' => $results[0]['email']
 							);
-				$this->view->render('home');
+				$this->view->render('profile');
 			}
 		} elseif (isset($_SESSION["user"]) && !empty($_SESSION["user"])) {
-			$this->view->render('home');
+			$this->view->render('profile');
 		} else {
-			$this->view->render('login');
+			$this->view->render('home');
 		}	
 	}
 
@@ -66,12 +65,12 @@ Class HomeController extends BaseController {
 							setcookie('username', $results[0]['username'], time() + (86400 * 30 * 10), "/"); //10 day
 							setcookie('email', $results[0]['email'], time() + (86400 * 30 * 10), "/"); //10 day
 						}
-						$this->view->render('home');
+						$this->view->render('profile');
 					} else {
 						$this->view->page_message = array(
 							'warning' => 'Invalid account. Try to validate it from your email.'
 						);
-						$this->view->render('login');
+						$this->view->render('profile');
 					}
 				} else {
 					$this->view->page_message = array(
@@ -87,7 +86,7 @@ Class HomeController extends BaseController {
 			}
 		} else {
 			if ((isset($_SESSION["user"])) && (!empty($_SESSION["user"]))) {
-				$this->view->render('home');
+				$this->view->render('profile');
 			} else {
 				$this->view->render('login');
 			}
@@ -269,10 +268,9 @@ Class HomeController extends BaseController {
 		unset($_SESSION['user']);
 		unset($_COOKIE['username']);
     	unset($_COOKIE['email']);
-		$this->view->render('login');
+		$this->view->render('home');
 	}
 
-	//PROFILE
 	public function profile() {
 		if (isset($_POST) && !empty($_POST)) {
 			// var_dump($_POST);die();
@@ -357,12 +355,147 @@ Class HomeController extends BaseController {
 	}
 
 	public function usersList($type=1) {
-		$condition = 'type = '.$type;
-		$results = $this->model->selectWithCondition('users', $condition);
-		$this->view->type = $type;
-		$this->view->data = $results;
-		$this->view->render('usersList');
+
+		if (isset($_POST) && !empty($_POST)) {
+			// $valid = $this->validator($data);
+			$valid['succes'] = true;
+			if ($valid['succes']) {
+				$password = substr(uniqid(), 0, 5);
+				$v = array(
+					'username' => $_POST['fname'].' '.$_POST['lname'],
+					'fname' => $_POST['fname'],
+					'lname' => $_POST['lname'],
+					'email' => $_POST['email'],
+					'password' => md5($password),
+					'status' => 1,
+					'type' => $_POST['type'],
+					'stud_year' => $_POST['stud_year']
+				);
+				if ($_POST['type'] == 1) {
+					$v['stud_group'] = $_POST['group'].$_POST['semian'];
+				} else {
+					$temp = "";
+					if (count($_POST['groups'])>0) {
+						foreach ($_POST['groups'] as $val) {
+							$temp .= $val;
+						}
+					}
+					$v['groups'] = $temp;
+				};
+				$inserted = $this->model->insert("users", $v);
+				if ($inserted) {
+					$header = 'MIME-Version: 1.0' . "\n";
+					$header .= 'Content-type: text/html; charset=iso-8859-1';
+					$msg = '<h3>Hello,</h3>'."\n";
+					$msg .= '<p>' . $_SESSION["user"]['username'] . 'just created an account for you on:<p>';
+					$msg .= '<a href="'.BASE_URL.'/home"'."\n";
+					$msg .= '<p>Regards,</p>'."\n";
+					$msg .= '<p>OAM team</p>';
+					mail($_POST['email'], 'Activate account on OAM', $msg, $header);
+					// mail('alexeevyci@yahoo.com', 'Activate account', 'minnihhgvu', $header);
+					$this->view->page_message = array(
+							'nottice' => 'Inserted succesfully. An email was sent to user.'
+						);
+					$condition = 'type = '.$_POST['type'];
+					$results = $this->model->selectWithCondition('users', $condition);
+					$this->view->type = $_POST['type'];
+					$this->view->data = $results;
+					$this->view->render('usersList');
+				}
+
+			} else {
+				$this->view->page_message = array(
+							'error' => 'Invalid data.'
+						);
+				$this->view->render('usersList');
+			}
+		} else {
+			$condition = 'type = '.$type;
+			$results = $this->model->selectWithCondition('users', $condition);
+			$this->view->type = $type;
+			$this->view->data = $results;
+			$this->view->render('usersList');
+		}
 	}
+
+	public function projects($type=1) {
+
+		if (isset($_POST['search']) && !empty($_POST['search'])) {
+			$condition2 = 'subject LIKE "%'.$_POST[text].'%"';
+			$results = $this->model->selectWithCondition('projects', $condition2);
+			$this->view->type = $type;
+			$this->view->data = $results;
+			$this->view->render('projects');
+		}
+
+		if (isset($_POST['add_project']) && !empty($_POST['add_project'])) {
+			// $valid = $this->validator($data);
+			$valid['succes'] = true;
+			if ($valid['succes']) {
+				$v = array(
+					'title' => $_POST['title'],
+					'subject' => $_POST['subject'],
+					'max_note' => $_POST['max_note'],
+					'max_studs' => $_POST['max_studs'],
+					'owner_id' => 3
+					);
+				$inserted = $this->model->insert("projects", $v);
+				if ($inserted) {
+					$results = $this->model->selectAll('projects');
+					$this->view->data = $results;
+					$this->view->type = $_SESSION['user']['user_type'];
+					$this->view->page_message = array(
+							'nottice' => 'Inserted succesfully!'
+						);
+					$this->view->render('projects');
+				} else {
+					$this->view->page_message = array(
+							'error' => 'Insert data problem!'
+						);
+					$this->view->render('projects');
+				}
+			} else {
+				$this->view->page_message = array(
+							'error' => 'Invalid data.'
+						);
+				$this->view->render('projects');
+			}
+		}
+
+		if ((!isset($_POST['search'])) && (!isset($_POST['add_project']))) {
+			$results = $this->model->selectAll('projects');
+			$this->view->data = $results;
+			$this->view->type = $_SESSION['user']['user_type'];
+			$this->view->render('projects');
+		}
+
+	}
+
+	public function project($id){
+		if($_SESSION['user']['user_type']<2) {
+			$this->acces();
+		}
+
+		$project_id = $id;
+		$user_id = $_SESSION['user']['user_id'];
+		$results = $this->model->selectProject($project_id, $user_id);
+		$this->view->data = $results;
+
+		$this->view->type = $_SESSION['user']['user_type'];
+		$this->view->render('project');
+
+
+	}
+
+	public function contact() {
+		$this->view->render('contact');
+	}
+
+	public function acces() {
+		$this->view->render('acces');
+		die();
+	}
+
 
 	//TEST
 	public function test() {

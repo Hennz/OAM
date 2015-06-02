@@ -10,22 +10,22 @@ Class Model extends Model_base {
 	}
 
 	public function selectAll($table){
-		$mysqli = new mysqli("localhost", "u656145912_root", "154815", "u656145912_larav");
 		$sql = " SELECT * FROM " .$table;
-
-		if(!$result = $mysqli->query($sql))
-		    die('There was an error running the query [' . $mysqli->error . ']');
+		if(!$result = $this->mysqli->query($sql))
+		    die('There was an error running the query [' . $this->mysqli->error . ']');
 		if($result->num_rows > 0)
-			$ret = $result->fetch_all();
+			while ($row = $result->fetch_assoc()) {
+			$ret[] = $row;
+		}
 		return $ret;
 	}
 
 	public function selectWithCondition($table, $condition) {
 		$ret = array();
-		$mysqli = new mysqli("localhost", "u656145912_root", "154815", "u656145912_larav");
 		$sql = " SELECT * FROM " . $table . " WHERE " . $condition;
-		if(!$result = $mysqli->query($sql))
-		    die('There was an error running the query [' . $mysqli->error . ']');
+		// die($sql);
+		if(!$result = $this->mysqli->query($sql))
+		    die('There was an error running the query [' . $this->mysqli->error . ']');
 		if($result->num_rows > 0)
 			while ($row = $result->fetch_assoc()) {
 			$ret[] = $row;
@@ -34,10 +34,11 @@ Class Model extends Model_base {
 	}
 
 	public function insert($table, $v){
-		$mysqli = new mysqli("localhost", "u656145912_root", "154815", "u656145912_larav");
 		$kv = array();
 		$vv = array();
 		foreach ($v as $key => $value) {
+			mysqli_real_escape_string($this->mysqli, $key);
+			mysqli_real_escape_string($this->mysqli, $value);
 			array_push($kv, $key);
 			array_push($vv, (string)$value);
 		}
@@ -45,10 +46,11 @@ Class Model extends Model_base {
 		$values = implode('","', $vv);
 
 		$sql = 'INSERT INTO '. $table .'('. $columns .') VALUES ("' .$values. '")';
-		if(!$result = $mysqli->query($sql))
+
+		if(!$result = $this->mysqli->query($sql))
 		    die('There was an error running the query [' . $this->mysqli->error . ']');
-		if ((int)$mysqli->insert_id >0)
-			return (int)$mysqli->insert_id;
+		if ((int)$this->mysqli->insert_id >0)
+			return (int)$this->mysqli->insert_id;
 		else
 			return 0;
 	}
@@ -81,6 +83,57 @@ Class Model extends Model_base {
 				$ret = $res->num_rows;	
 		}
 		return (int)$ret;
+	}
+
+	// OTHERS
+	public function selectAllProjects() {
+		$ret = array();
+		$sql = " SELECT projects.id AS project_id,
+						projects.title,
+						projects.subject,
+						projects.max_note,
+						projects.max_studs,
+						users.username
+					FROM projects
+					LEFT JOIN users
+					ON projects.owner_id = users.id";
+
+		if(!$result = $this->mysqli->query($sql))
+		    die('There was an error running the query [' . $this->mysqli->error . ']');
+		if($result->num_rows > 0)
+			while ($row = $result->fetch_assoc()) {
+			$ret[] = $row;
+		}
+		return $ret;
+	}
+
+	public function selectProject($project_id, $user_id) {
+		$ret = array();
+		$sql = " SELECT notes.id AS idd,
+						notes.file_name,
+						notes.note,
+						notes.project_id,
+						users.id AS user_id,
+						users.username,
+						projects.title,
+						projects.subject,
+						projects.max_note,
+						projects.max_studs
+					FROM notes
+					LEFT JOIN users
+					ON notes.user_id = users.id
+					LEFT JOIN projects
+					ON notes.project_id = projects.id
+					WHERE notes.project_id =".$project_id." 
+					AND notes.owner_project =".$user_id;
+		// die($sql);
+		if(!$result = $this->mysqli->query($sql))
+		    die('There was an error running the query [' . $this->mysqli->error . ']');
+		if($result->num_rows > 0)
+			while ($row = $result->fetch_assoc()) {
+			$ret[] = $row;
+		}
+		return $ret;
 	}
 
 }

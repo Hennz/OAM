@@ -1,5 +1,8 @@
 var BASE_URL = "http://www.myprograming.esy.es";
 document.addEventListener("DOMContentLoaded", function(event) { 
+
+
+
  	function changeLogReg(x){
 		var temp = document.getElementsByClassName("buttons")[0].getElementsByTagName("span");
 		if (x==0){
@@ -11,33 +14,80 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		}
 	}
 
-	// OTHERS
-	function slideShow() {
-    var displayToggled = false;
-    var current1 = $('.slide:visible');
-    var nextSlide = current1.next('.slide');
-    var hideoptions = {
-        "direction": "left",
-        "mode": "hide"
-    };
-    var showoptions = {
-        "direction": "right",
-        "mode": "show"
-    };
-    if (current1.is(':last-child')) {
-        current1.effect("slide", hideoptions, 1000);
-        $("#firstSlide").effect("slide", showoptions, 1000);
-    }
-    else {
-        current1.effect("slide", hideoptions, 1000);
-        nextSlide.effect("slide", showoptions, 1000);
-    }
-};
-setInterval(slideShow, 3000);
-slideShow();
+
 
 
 });
+
+function delete_row(id, x) {
+	var params="id="+id;
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("POST",BASE_URL+"/ajax/deletePproject",true);
+	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange=function() {
+  		if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+	    	var response = xmlhttp.responseText;
+	    	if (response) {
+	    		console.log(x.parentNode.parentNode.remove());
+	    	} 
+	    }
+  	}
+	xmlhttp.send(params);
+}
+
+function select_project(id, x) {
+	var params="id="+id;
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("POST",BASE_URL+"/ajax/chooseProject",true);
+	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange=function() {
+  		if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+	    	var response = xmlhttp.responseText;
+	    	// console.log(response);
+	    	if (response) {
+	    		if (response == "insert") {
+	    			var temp = document.createElement('p');
+					temp.innerHTML = '<p>nottice - Project was assigned!';
+					document.querySelector('.page_messages').innerHTML = "";
+					document.querySelector('.page_messages').appendChild(temp);
+	    		}
+	    		if (response == "update") {
+	    			var temp = document.createElement('p');
+					temp.innerHTML = '<p>nottice - Project was changed!';
+					document.querySelector('.page_messages').innerHTML = "";
+					document.querySelector('.page_messages').appendChild(temp);	    			
+	    		}
+	    	} 
+	    }
+  	}
+	xmlhttp.send(params);
+}
+
+function setNote(id, x) {
+	var params="id="+id+"&value="+x.value;
+	// console.log(x.value);
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("POST",BASE_URL+"/ajax/setNote",true);
+	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlhttp.onreadystatechange=function() {
+  		if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+	    	var response = xmlhttp.responseText;
+	    	// console.log(response);
+	    	if (response) {
+    			var temp = document.createElement('p');
+				temp.innerHTML = '<p>nottice - Note was changed!';
+				document.querySelector('.page_messages').innerHTML = "";
+				document.querySelector('.page_messages').appendChild(temp);
+			} else {
+				var temp = document.createElement('p');
+					temp.innerHTML = '<p>Error - Problem to update!';
+					document.querySelector('.page_messages').innerHTML = "";
+					document.querySelector('.page_messages').appendChild(temp);
+			}
+	    }
+  	}
+	xmlhttp.send(params);
+}
 
 function changeLogReg(x){
 	var temp = document.getElementsByClassName("buttons")[0].getElementsByTagName("span");
